@@ -1,0 +1,54 @@
+# Import required libraries
+import numpy as np
+from keras.preprocessing import image
+from keras.applications.inception_v3 import InceptionV3, preprocess_input
+from keras.models import Model, load_model
+from keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.text import Tokenizer
+
+# Load the InceptionV3 model
+model_inception = InceptionV3(weights='imagenet')
+model_new = Model(model_inception.input, model_inception.layers[-2].output)
+
+# Preprocess the image
+def preprocess_image(image_path):
+    img = image.load_img(image_path, target_size=(299, 299))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
+    return x
+
+# Extract features from the image
+def extract_features(image_path):
+    img = preprocess_image(image_path)
+    features = model_new.predict(img)
+    return features
+
+# Generate captions using the RNN model
+def generate_caption(model, photo, tokenizer, max_length):
+    in_text = 'startseq'
+    for i in range(max_length):
+        sequence = tokenizer.texts_to_sequences([in_text])[0]
+        sequence = pad_sequences([sequence], maxlen=max_length)
+        yhat = model.predict([photo, sequence], verbose=0)
+        yhat = np.argmax(yhat)
+        word = tokenizer.index_word[yhat]
+        if word is None:
+            break
+        in_text += ' ' + word
+        if word == 'endseq':
+            break
+    return in_text
+
+# Load the pre-trained RNN model for caption generation
+model_rnn = load_model('model_caption.h5')
+
+# Load tokenizer and define the maximum length of sequences
+tokenizer = ...  # Load your tokenizer
+max_length = ...  # Define max length based on your dataset
+
+# Example usage
+image_path = 'example.jpg'
+photo = extract_features(image_path)
+caption = generate_caption(model_rnn, photo, tokenizer, max_length)
+print("Generated Caption:", caption)
