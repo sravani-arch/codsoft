@@ -1,0 +1,25 @@
+# Define rules
+def chatbot_response(user_input):
+    response = ""
+    
+    if "hello" in user_input.lower():
+        response = "Hi! How can I help you today?"
+    elif "weather" in user_input.lower():
+        response = "I'm sorry, I can't provide weather updates."
+    elif "bye" in user_input.lower():
+        response = "Goodbye! Have a great day!"
+    else:
+        response = "I'm sorry, I don't understand that."
+    
+    return response
+
+# Chat loop
+print("Chatbot: Hello! I am a simple chatbot.")
+while True:
+    user_input = input("You: ")
+    if user_input.lower() == "exit":
+        print("Chatbot: Goodbye!")
+        break
+    
+    response = chatbot_response(user_input)
+    print("Chatbot:", response)
